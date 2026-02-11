@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Vault | {{ site.full_name }}</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=Space+Grotesk:wght@300;400;500&family=Cormorant+Garamond:ital,wght@0,400;0,700;1,400&display=swap"
+        rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background: #0a0a0a;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .vault-container {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .vault-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(3rem, 10vw, 7rem);
+            font-weight: 700;
+            background: linear-gradient(135deg, #a8d8a8 0%, #7ec8e3 40%, #c97bb5 80%, #a8d8a8 100%);
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            animation: gradientShift 6s ease infinite;
+            margin-bottom: 1rem;
+        }
+
+        @keyframes gradientShift {
+
+            0%,
+            100% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+        }
+
+        .vault-sub {
+            font-family: 'Sora', sans-serif;
+            font-size: clamp(0.7rem, 2vw, 1rem);
+            text-transform: uppercase;
+            letter-spacing: 0.4em;
+            color: rgba(255, 255, 255, 0.3);
+            font-weight: 400;
+            margin-bottom: 3rem;
+        }
+
+        .back-link {
+            font-family: 'Sora', sans-serif;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            color: rgba(255, 255, 255, 0.5);
+            text-decoration: none;
+            padding: 12px 28px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 30px;
+            transition: all 0.3s;
+        }
+
+        .back-link:hover {
+            color: #fff;
+            border-color: rgba(255, 255, 255, 0.35);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        /* Floating dots */
+        .dot {
+            position: fixed;
+            border-radius: 50%;
+            background: rgba(168, 216, 168, 0.15);
+            animation: float 15s ease-in-out infinite;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0) scale(1);
+            }
+
+            50% {
+                transform: translateY(-40px) scale(1.1);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Decorative floating dots -->
+    <div class="dot" style="width:200px;height:200px;top:10%;left:10%;animation-delay:0s;opacity:0.08"></div>
+    <div class="dot"
+        style="width:150px;height:150px;bottom:15%;right:15%;animation-delay:-5s;opacity:0.06;background:rgba(126,200,227,0.15)">
+    </div>
+    <div class="dot"
+        style="width:100px;height:100px;top:60%;left:70%;animation-delay:-10s;opacity:0.05;background:rgba(201,123,181,0.15)">
+    </div>
+
+    <div class="vault-container">
+        <h1 class="vault-title">Coming Soon</h1>
+        <p class="vault-sub">The vault is being prepared</p>
+        <a href="/" class="back-link">← Back Home</a>
+    </div>
+</body>
+
+</html>

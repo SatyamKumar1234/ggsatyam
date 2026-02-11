@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Photography | {{ site.full_name }}</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap"
+        rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: #f5f0eb;
+            color: #1a1a2e;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .container {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .title {
+            font-family: 'Outfit', sans-serif;
+            font-size: clamp(3rem, 10vw, 7rem);
+            font-weight: 800;
+            background: linear-gradient(135deg, #2d3436 0%, #636e72 40%, #b2bec3 80%);
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            animation: gradShift 6s ease infinite;
+            margin-bottom: 1rem;
+        }
+
+        @keyframes gradShift {
+
+            0%,
+            100% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+        }
+
+        .sub {
+            font-family: 'Outfit', sans-serif;
+            font-size: clamp(0.7rem, 2vw, 1rem);
+            text-transform: uppercase;
+            letter-spacing: 0.4em;
+            color: #636e72;
+            font-weight: 400;
+            margin-bottom: 3rem;
+        }
+
+        .back-link {
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.8rem;
+            font-weight: 600;
+            letter-spacing: 0.15em;
+            color: #2d3436;
+            text-decoration: none;
+            padding: 12px 28px;
+            border: 2px solid #2d3436;
+            border-radius: 30px;
+            transition: all 0.3s;
+        }
+
+        .back-link:hover {
+            background: #2d3436;
+            color: #f5f0eb;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1 class="title">Coming Soon</h1>
+        <p class="sub">Photography gallery is being curated</p>
+        <a href="/" class="back-link">← Back Home</a>
+    </div>
+</body>
+
+</html>

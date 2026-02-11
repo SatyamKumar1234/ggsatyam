@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>{{ site.page_title }}</title>
+    <meta name="description" content="{{ site.meta_description }}">
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet" />
+    <script src="https://kit.fontawesome.com/f26f250140.js" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/lenis@1.1.18/dist/lenis.min.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* FIX: Removing fixed height to allow scrolling */
+        html,
+        body {
+            overflow-x: hidden;
+            width: 100%;
+            /* height: 100%; <-- REMOVED this line to fix scrolling */
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            color: #1a1a2e;
+            background: #f5f0eb;
+            line-height: 1.6;
+        }
+
+        /* ===== NAV: JUST TEXT, NO BUTTONS ===== */
+        .top-nav {
+            position: fixed;
+            top: 28px;
+            right: 36px;
+            z-index: 5000;
+            display: flex;
+            gap: 32px;
+        }
+
+        .nav-text {
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.25em;
+            color: rgba(255, 255, 255, 0.9);
+            text-decoration: none;
+            text-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .nav-text:hover {
+            color: #fff;
+            transform: translateY(-2px);
+        }
+
+        /* ===== TOGGLES: sakura + music separately ===== */
+        .floating-controls {
+            position: fixed;
+            top: 24px;
+            left: 32px;
+            z-index: 5000;
+            display: flex;
+            gap: 16px;
+            align-items: center;
+        }
+
+        .ctrl-toggle {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 28px;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Sakura toggle: grayscale to pink */
+        #sakura-toggle {
+            filter: grayscale(100%) opacity(0.5);
+        }
+
+        #sakura-toggle.active {
+            filter: grayscale(0%) opacity(1);
+        }
+
+        /* Music toggle icon */
+        .music-icon {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 30px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+        }
+
+        .music-icon.active {
+            color: #ffd700;
+            opacity: 1;
+            text-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
+        }
+
+        .ctrl-toggle:hover {
+            transform: scale(1.2);
+        }
+
+        /* ===== HERO (Rice Field) ===== */
+        .hero-section {
+            position: relative;
+            min-height: 100vh;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .hero-bg {
+            position: absolute;
+            inset: 0;
+            background: url("{{ url_for('static', filename='images/hero-rice.jpg') }}") center/cover no-repeat;
+        }
+
+        /* Particle canvas */
+        #particle-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+            pointer-events: none;
+            /* FIX: Allow clicks through canvas */
+            /* cursor: none; <-- REMOVED this line to fix invisible cursor */
+        }
+
+        /* Text content ON the image */
+        .hero-text {
+            position: relative;
+            z-index: 3;
+            text-align: center;
+            margin-top: 15vh;
+            padding: 0 32px;
+            pointer-events: none;
+            /* Let clicks pass through container */
+        }
+
+        .hero-text>* {
+            pointer-events: auto;
+            /* Re-enable pointer events for text if needed (though mostly static) */
+        }
+
+        .hero-spacer {
+            height: 18vh;
+        }
+
+        .hero-subtitle {
+            font-family: 'Outfit', sans-serif;
+            font-size: clamp(1.1rem, 3.5vw, 1.6rem);
+            font-weight: 900;
+            letter-spacing: 0.4em;
+            text-transform: uppercase;
+            color: #fff;
+            text-shadow: 0 5px 25px rgba(0, 0, 0, 0.6), 0 0 50px rgba(0, 0, 0, 0.3);
+            opacity: 0;
+            animation: fadeUp 1.2s ease 2.8s forwards;
+        }
+
+        .hero-location {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.95);
+            margin-top: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            text-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            opacity: 0;
+            animation: fadeUp 1.2s ease 3.3s forwards;
+        }
+
+        .hero-intro {
+            font-family: 'DM Sans', sans-serif;
+            font-size: clamp(1.1rem, 2vw, 1.4rem);
+            font-weight: 700;
+            color: #fff;
+            line-height: 1.8;
+            max-width: 720px;
+            margin: 28px auto 0;
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.6), 0 0 40px rgba(0, 0, 0, 0.2);
+            opacity: 0;
+            animation: fadeUp 1.2s ease 3.8s forwards;
+        }
+
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(18px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Hero Social */
+        .hero-social {
+            position: absolute;
+            bottom: 70px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 3;
+            display: flex;
+            gap: 2.2rem;
+            opacity: 0;
+            animation: fadeUp 1s ease 4.5s forwards;
+        }
+
+        .hero-social a {
+            font-size: 1.8rem;
+            color: rgba(255, 255, 255, 0.8);
+            transition: all 0.3s;
+            text-decoration: none;
+            text-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+        }
+
+        .hero-social a:hover {
+            color: #ffb7c5;
+            transform: translateY(-5px);
+        }
+
+        .scroll-hint {
+            position: absolute;
+            bottom: 24px;
+            left: 50%;
+            z-index: 3;
+            opacity: 0;
+            animation: gentleBounce 2.5s ease-in-out infinite, fadeUp 1s ease 5s forwards;
+        }
+
+        @keyframes gentleBounce {
+
+            0%,
+            100% {
+                transform: translateX(-50%) translateY(0);
+            }
+
+            50% {
+                transform: translateX(-50%) translateY(-12px);
+            }
+        }
+
+        /* ===== TRAIN SECTION ===== */
+        .train-section {
+            position: relative;
+            width: 100%;
+            overflow: hidden;
+            background: #000;
+        }
+
+        .train-bg {
+            position: absolute;
+            inset: 0;
+            background: url("{{ url_for('static', filename='images/hero-train.png') }}") center/cover no-repeat;
+            opacity: 0.95;
+        }
+
+        .train-content {
+            position: relative;
+            z-index: 3;
+            padding: 120px 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 100px;
+        }
+
+        /* ===== PROFICIENCY — NO CARDS, BOLD, VISIBLE ===== */
+        .section-label {
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5em;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 2rem;
+            font-weight: 900;
+            text-shadow: 0 4px 12px rgba(0, 0, 0, 0.7);
+        }
+
+        .skills-container {
+            max-width: 600px;
+        }
+
+        .skill-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .skill-row:last-child {
+            border-bottom: none;
+        }
+
+        .skill-name {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 900;
+            color: #fff;
+            text-shadow: 0 4px 15px rgba(0, 0, 0, 0.8);
+            transition: all 0.3s;
+        }
+
+        .skill-row:hover .skill-name {
+            color: #ffd700;
+            transform: translateX(10px);
+        }
+
+        .stars {
+            display: flex;
+            gap: 4px;
+        }
+
+        .stars .filled {
+            color: #ffd700;
+            text-shadow: 0 0 12px rgba(255, 215, 0, 0.8);
+        }
+
+        .stars .empty {
+            color: rgba(255, 255, 255, 0.25);
+        }
+
+        /* ===== PROJECTS — NO CARDS, BOLD ===== */
+        .proj-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2.5rem;
+        }
+
+        .proj-card {
+            position: relative;
+            border-radius: 20px;
+            overflow: hidden;
+            text-decoration: none;
+            color: #fff;
+            display: block;
+            aspect-ratio: 16/10;
+            box-shadow: 0 15px 45px rgba(0, 0, 0, 0.5);
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .proj-card:hover {
+            transform: translateY(-10px) scale(1.02);
+        }
+
+        .proj-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.8s;
+        }
+
+        .proj-card:hover img {
+            transform: scale(1.1);
+        }
+
+        .proj-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, transparent 40%, rgba(0, 0, 0, 0.9) 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 2rem;
+            opacity: 0.9;
+        }
+
+        .proj-meta {
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: rgba(255, 255, 255, 0.6);
+            font-weight: 700;
+        }
+
+        .proj-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 900;
+            color: #fff;
+            margin-top: 4px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .proj-desc {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin-top: 5px;
+            font-weight: 500;
+        }
+
+        /* ===== FOOTER — BOLD & SMOOTH ===== */
+        .footer-block {
+            text-align: center;
+            padding: 40px 0 60px;
+        }
+
+        .footer-username {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.2rem;
+            letter-spacing: 0.6em;
+            font-weight: 400;
+            color: rgba(255, 255, 255, 0.5);
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+            margin-bottom: 2.5rem;
+            text-transform: uppercase;
+        }
+
+        .footer-social {
+            display: flex;
+            justify-content: center;
+            gap: 3rem;
+            flex-wrap: wrap;
+        }
+
+        .social-link {
+            font-size: 2.2rem;
+            color: rgba(255, 255, 255, 0.7);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            text-decoration: none;
+            text-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        .social-link:hover {
+            color: #ffb7c5;
+            transform: translateY(-8px) scale(1.15);
+        }
+
+        /* ===== CHERRY BLOSSOM ===== */
+        .blossom-container {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 4000;
+            transition: opacity 2s;
+            overflow: hidden;
+        }
+
+        .petal {
+            position: absolute;
+            top: -50px;
+            border-radius: 50% 0 50% 50%;
+            animation: petalFall linear infinite, petalSway ease-in-out infinite alternate, petalSpin linear infinite;
+        }
+
+        @keyframes petalFall {
+            0% {
+                transform: translateY(-10vh);
+            }
+
+            100% {
+                transform: translateY(110vh);
+            }
+        }
+
+        @keyframes petalSway {
+            0% {
+                margin-left: -30px;
+            }
+
+            100% {
+                margin-left: 30px;
+            }
+        }
+
+        @keyframes petalSpin {
+            0% {
+                rotate: 0deg;
+            }
+
+            100% {
+                rotate: 360deg;
+            }
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 768px) {
+            .hero-text {
+                margin-top: 20vh;
+            }
+
+            .hero-spacer {
+                height: 10vh;
+            }
+
+            .train-content {
+                padding: 80px 24px;
+                gap: 60px;
+            }
+
+            .proj-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .top-nav {
+                top: 20px;
+                right: 24px;
+                gap: 20px;
+            }
+
+            .nav-text {
+                font-size: 0.75rem;
+            }
+
+            .floating-controls {
+                top: 20px;
+                left: 24px;
+            }
+
+            .ctrl-toggle {
+                font-size: 24px;
+            }
+
+            .hero-subtitle {
+                font-size: 1.2rem;
+            }
+
+            .hero-intro {
+                font-size: 1.05rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- NAV: PLAIN TEXT ONLY -->
+    <nav class="top-nav">
+        <a href="/vault" class="nav-text">Vault</a>
+        <a href="/photography" class="nav-text">Photography</a>
+    </nav>
+
+    <!-- SAKURA & MUSIC CONTROLS (icon only, no buttons) -->
+    <div class="floating-controls">
+        <button class="ctrl-toggle active" id="sakura-toggle">🌸</button>
+        <button class="ctrl-toggle" id="music-toggle">
+            <span class="material-symbols-outlined music-icon">music_note</span>
+        </button>
+    </div>
+
+    <!-- CHERRY BLOSSOM -->
+    <div class="blossom-container" id="blossoms"></div>
+
+    <!-- ============================== -->
+    <!-- HERO: Rice Field               -->
+    <!-- ============================== -->
+    <section class="hero-section" id="hero">
+        <div class="hero-bg"></div>
+        <canvas id="particle-canvas"></canvas>
+
+        <div class="hero-text">
+            <div class="hero-spacer"></div>
+            <p class="hero-subtitle">{{ site.title }}</p>
+            <p class="hero-location">
+                <span class="material-symbols-outlined" style="font-size:16px">location_on</span>
+                {{ site.location }}
+            </p>
+            <p class="hero-intro">{{ site.intro_text }}</p>
+        </div>
+
+        <!-- Social links at bottom of hero -->
+        <div class="hero-social">
+            {% for key, link in social_links.items() %}
+            <a href="{{ link.url }}" target="_blank" aria-label="{{ link.label }}"><i class="{{ link.icon }}"></i></a>
+            {% endfor %}
+        </div>
+
+        <div class="scroll-hint">
+            <span class="material-symbols-outlined"
+                style="font-size:32px;color:rgba(255,255,255,0.8)">keyboard_arrow_down</span>
+        </div>
+    </section>
+
+    <!-- ============================== -->
+    <!-- TRAIN: Skills + Projects       -->
+    <!-- ============================== -->
+    <section class="train-section">
+        <div class="train-bg"></div>
+
+        <div class="train-content">
+            <!-- PROFICIENCY -->
+            <div class="skills-container">
+                <div class="section-label">Proficiency</div>
+                {% for skill in proficiency %}
+                <div class="skill-row">
+                    <span class="skill-name">{{ skill.name }}</span>
+                    <div class="stars">
+                        {% for i in range(5) %}
+                        <span class="material-symbols-outlined {{ 'filled' if i < skill.stars else 'empty' }}"
+                            style="font-size:18px;font-variation-settings:'FILL' {{ 1 if i < skill.stars else 0 }}">star</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- PROJECTS -->
+            <div>
+                <div class="section-label">Selected Projects</div>
+                <div class="proj-grid">
+                    {% for project in projects %}
+                    <a href="{{ project.link }}" target="_blank" class="proj-card">
+                        <img src="{{ project.image }}" alt="{{ project.title }}" loading="lazy">
+                        <div class="proj-overlay">
+                            <span class="proj-meta">{{ project.category }} — {{ project.year }}</span>
+                            <h3 class="proj-title">{{ project.title }}</h3>
+                            {% if project.description %}<p class="proj-desc">{{ project.description }}</p>{% endif %}
+                        </div>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- FOOTER -->
+            <div class="footer-block">
+                <p class="footer-username">@{{ site.username }}</p>
+                <div class="footer-social">
+                    {% for key, link in social_links.items() %}
+                    <a href="{{ link.url }}" class="social-link" aria-label="{{ link.label }}" target="_blank">
+                        <i class="{{ link.icon }}"></i>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- AUDIO -->
+    <audio id="bgMusic" preload="auto"></audio>
+
+    <script>
+        // ============================================================
+        // PARTICLE NAME — Bold, Modern, Magnet Effect
+        // ============================================================
+        (function () {
+            const canvas = document.getElementById('particle-canvas');
+            const ctx = canvas.getContext('2d');
+            let W, H, particles = [];
+            let mouse = { x: -999, y: -999, radius: 110 };
+            const TEXT = '{{ site.intro_name }}';
+            const DENSITY = 2; // More particles
+            let animStartTime = 0;
+            const FORM_DURATION = 3000;
+
+            function resize() {
+                W = canvas.width = window.innerWidth;
+                H = canvas.height = window.innerHeight;
+                if (particles.length > 0) {
+                    const newPos = getTextPositions();
+                    for (let i = 0; i < particles.length; i++) {
+                        if (i < newPos.length) {
+                            particles[i].targetX = newPos[i].x;
+                            particles[i].targetY = newPos[i].y;
+                        }
+                    }
+                }
+            }
+
+            function getTextPositions() {
+                const off = document.createElement('canvas');
+                off.width = W; off.height = H;
+                const oc = off.getContext('2d');
+                let fSize = Math.min(W * 0.12, 160);
+                if (W < 600) fSize = W * 0.16;
+                oc.font = `900 ${fSize}px 'Outfit', sans-serif`;
+                oc.textAlign = 'center'; oc.textBaseline = 'middle';
+                oc.fillStyle = '#000';
+                oc.fillText(TEXT, W / 2, H * 0.35);
+                const data = oc.getImageData(0, 0, W, H).data;
+                const pos = [];
+                for (let y = 0; y < H; y += DENSITY) {
+                    for (let x = 0; x < W; x += DENSITY) {
+                        if (data[(y * W + x) * 4 + 3] > 128) pos.push({ x, y });
+                    }
+                }
+                return pos;
+            }
+
+            function init() {
+                const positions = getTextPositions();
+                particles = positions.map(p => ({
+                    targetX: p.x, targetY: p.y,
+                    x: p.x + (Math.random() - 0.5) * W * 1.5,
+                    y: p.y + (Math.random() - 0.5) * H * 1.5,
+                    vx: 0, vy: 0,
+                    size: 2 + Math.random() * 1.2, // Bolder particles
+                    alpha: 0,
+                }));
+                animStartTime = performance.now();
+                requestAnimationFrame(draw);
+            }
+
+            function draw(now) {
+                ctx.clearRect(0, 0, W, H);
+                const progress = Math.min((now - animStartTime) / FORM_DURATION, 1);
+                const ease = 1 - Math.pow(1 - progress, 3);
+
+                for (const p of particles) {
+                    if (progress < 1) {
+                        p.x += (p.targetX - p.x) * 0.05;
+                        p.y += (p.targetY - p.y) * 0.05;
+                        p.alpha = ease;
+                    } else {
+                        const dx = mouse.x - p.x, dy = mouse.y - p.y;
+                        const d = Math.sqrt(dx * dx + dy * dy);
+                        if (d < mouse.radius) {
+                            const f = (mouse.radius - d) / mouse.radius;
+                            p.vx -= dx * f * 0.03;
+                            p.vy -= dy * f * 0.03;
+                        }
+                        p.vx += (p.targetX - p.x) * 0.1;
+                        p.vy += (p.targetY - p.y) * 0.1;
+                        p.vx *= 0.8; p.vy *= 0.8;
+                        p.x += p.vx; p.y += p.vy;
+                        p.alpha = 1;
+                    }
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(255,255,255,${p.alpha})`;
+                    ctx.fill();
+                }
+                requestAnimationFrame(draw);
+            }
+
+            window.addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
+            window.addEventListener('touchstart', e => { mouse.x = e.touches[0].clientX; mouse.y = e.touches[0].clientY; });
+            window.addEventListener('resize', resize);
+            document.fonts.ready.then(() => { resize(); setTimeout(init, 500); });
+        })();
+
+        // ============================================================
+        // MUSIC & SAKURA LOGIC
+        // ============================================================
+        const audio = document.getElementById('bgMusic');
+        const musicTracks = {{ music_tracks | tojson }};
+        const sakuraBtn = document.getElementById('sakura-toggle');
+        const musicBtn = document.getElementById('music-toggle');
+        const blossomC = document.getElementById('blossoms');
+        const mIcon = musicBtn.querySelector('.music-icon');
+        let blossomActive = {{ 'true' if blossom_config.enabled_by_default else 'false' }};
+        let musicPlaying = false;
+        let currentTrack = 0;
+        const MAX_VOL = 0.5;
+
+        // Sakura toggle
+        sakuraBtn.addEventListener('click', () => {
+            blossomActive = !blossomActive;
+            blossomC.style.opacity = blossomActive ? '1' : '0';
+            sakuraBtn.classList.toggle('active', blossomActive);
+        });
+
+        // Music toggle
+        function loadTrack(idx) {
+            if (!musicTracks.length) return;
+            audio.src = "{{ url_for('static', filename='') }}" + musicTracks[idx % musicTracks.length];
+            audio.load();
+        }
+        function startMusic() {
+            if (!musicTracks.length || musicPlaying) return;
+            loadTrack(currentTrack); audio.volume = 0;
+            audio.play().then(() => {
+                musicPlaying = true; mIcon.classList.add('active');
+                fadeVol(0, MAX_VOL, 1500);
+            }).catch(() => { });
+        }
+        function stopMusic() {
+            if (!musicPlaying) return;
+            fadeVol(audio.volume, 0, 800);
+            setTimeout(() => { audio.pause(); musicPlaying = false; mIcon.classList.remove('active'); }, 800);
+        }
+        function fadeVol(f, t, d) {
+            const steps = 20, st = d / steps, sv = (t - f) / steps;
+            let c = f, s = 0; audio.volume = f;
+            const i = setInterval(() => { s++; c += sv; audio.volume = Math.max(0, Math.min(1, c)); if (s >= steps) clearInterval(i); }, st);
+        }
+        musicBtn.addEventListener('click', () => { if (musicPlaying) stopMusic(); else startMusic(); });
+        audio.addEventListener('ended', () => { currentTrack = (currentTrack + 1) % musicTracks.length; startMusic(); });
+
+        // Petals init
+        (function () {
+            const colors = {{ blossom_config.colors | tojson
+        }};
+        for (let i = 0; i < {{ blossom_config.count }}; i++) {
+            const p = document.createElement('div'); p.className = 'petal';
+            const c = colors[Math.floor(Math.random() * colors.length)];
+            const sz = Math.random() * 10 + 8, fd = Math.random() * 10 + 9, sd = Math.random() * 5 + 3, sp = Math.random() * 6 + 5;
+            p.style.cssText = `left:${Math.random() * 100}%;width:${sz}px;height:${sz * 1.3}px;background:${c};animation-duration:${fd}s,${sd}s,${sp}s;animation-delay:-${Math.random() * fd}s,-${Math.random() * sd}s;opacity:${Math.random() * 0.4 + 0.3}`;
+            blossomC.appendChild(p);
+        }
+    }) ();
+
+        // Lenis
+        const lenis = new Lenis({ duration: 1.2, easing: t => Math.min(1, 1.001 - Math.pow(2, -10 * t)), smoothWheel: true });
+        function raf(t) { lenis.raf(t); requestAnimationFrame(raf); }
+        requestAnimationFrame(raf);
+    </script>
+</body>
+
+</html>
